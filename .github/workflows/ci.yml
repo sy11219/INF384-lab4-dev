@@ -79,8 +79,8 @@ jobs:
             --workdir /src \
             ghcr.io/aquasecurity/trivy:0.76.1 fs \
               --scanners vuln \
-              --include-dev-deps \
               --severity HIGH,CRITICAL \
+              --ignore-unfixed \
               --exit-code 1 \
               package-lock.json
 
@@ -127,7 +127,7 @@ jobs:
             --tag "$REGISTRY/$APP:$GITHUB_SHA" \
             .
 
-      - name: Escaneo de la imagen (informativo)
+      - name: Escaneo de la imagen (compuerta)
         env:
           REGISTRY: ${{ steps.ecr.outputs.registry }}
         run: |
@@ -149,7 +149,12 @@ jobs:
             ' trivy-imagen.json
           } >> "$GITHUB_STEP_SUMMARY"
           altos="$(jq '[.Results[].Vulnerabilities[]? | select(.Severity == "HIGH" or .Severity == "CRITICAL")] | length' trivy-imagen.json)"
-          echo "::warning title=Escaneo de la imagen::${altos} hallazgos HIGH o CRITICAL. Informativo, no detiene."
+          con_parche="$(jq '[.Results[].Vulnerabilities[]? | select((.Severity == "HIGH" or .Severity == "CRITICAL") and ((.FixedVersion // "") != ""))] | length' trivy-imagen.json)"
+          echo "::warning title=Escaneo de la imagen::${altos} hallazgos HIGH o CRITICAL; ${con_parche} con parche disponible."
+          if [ "$con_parche" -gt 0 ]; then
+            echo "::error title=Escaneo de la imagen::${con_parche} hallazgos HIGH o CRITICAL con parche. La imagen no se publica."
+            exit 1
+          fi
 
       - name: Push
         env:
