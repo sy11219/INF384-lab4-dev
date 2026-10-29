@@ -1,6 +1,21 @@
-const { test } = require('node:test');
+const { test, beforeEach, after } = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
 const { handler } = require('../../src/handler');
+
+const DIRECTORIO = fs.mkdtempSync(path.join(os.tmpdir(), 'wallet-integracion-'));
+let contador = 0;
+
+beforeEach(() => {
+  contador += 1;
+  process.env.DB_PATH = path.join(DIRECTORIO, `prueba-${contador}.db`);
+});
+
+after(() => {
+  fs.rmSync(DIRECTORIO, { recursive: true, force: true });
+});
 
 async function llamar(metodo, ruta, cuerpo) {
   const r = await handler({
@@ -18,16 +33,19 @@ test('ana transfiere 100 a beto', async () => {
 });
 
 test('el saldo de ana refleja el debito', async () => {
+  await llamar('POST', '/transferir', { origen: 'ana', destino: 'beto', monto: 100 });
   const r = await llamar('GET', '/saldo/ana');
   assert.deepEqual(r.cuerpo, { usuario: 'ana', saldo: 900 });
 });
 
 test('el saldo de beto refleja el credito', async () => {
+  await llamar('POST', '/transferir', { origen: 'ana', destino: 'beto', monto: 100 });
   const r = await llamar('GET', '/saldo/beto');
   assert.deepEqual(r.cuerpo, { usuario: 'beto', saldo: 600 });
 });
 
 test('el historial de ana registra la transferencia', async () => {
+  await llamar('POST', '/transferir', { origen: 'ana', destino: 'beto', monto: 100 });
   const r = await llamar('GET', '/historial/ana');
   assert.equal(r.status, 200);
   assert.equal(r.cuerpo.length, 1);
@@ -35,16 +53,17 @@ test('el historial de ana registra la transferencia', async () => {
   assert.equal(r.cuerpo[0].monto, 100);
 });
 
-test('ana no puede transferir 950', async () => {
-  const r = await llamar('POST', '/transferir', { origen: 'ana', destino: 'carla', monto: 950 });
+test('ana no puede transferir mas que su saldo', async () => {
+  const r = await llamar('POST', '/transferir', { origen: 'ana', destino: 'carla', monto: 1000.01 });
   assert.equal(r.status, 400);
   assert.equal(r.cuerpo.error, 'saldo insuficiente');
 });
 
 test('una transferencia rechazada no cambia saldos', async () => {
+  await llamar('POST', '/transferir', { origen: 'ana', destino: 'carla', monto: 1000.01 });
   const ana = await llamar('GET', '/saldo/ana');
   const carla = await llamar('GET', '/saldo/carla');
-  assert.equal(ana.cuerpo.saldo, 900);
+  assert.equal(ana.cuerpo.saldo, 1000);
   assert.equal(carla.cuerpo.saldo, 750);
 });
 
@@ -56,11 +75,14 @@ test('diego transfiere todo su saldo a elena', async () => {
 });
 
 test('diego sin saldo no puede transferir', async () => {
+  await llamar('POST', '/transferir', { origen: 'diego', destino: 'elena', monto: 300 });
   const r = await llamar('POST', '/transferir', { origen: 'diego', destino: 'ana', monto: 0.01 });
   assert.equal(r.status, 400);
+  assert.equal(r.cuerpo.error, 'saldo insuficiente');
 });
 
 test('el historial de elena muestra solo la transferencia de diego', async () => {
+  await llamar('POST', '/transferir', { origen: 'diego', destino: 'elena', monto: 300 });
   const r = await llamar('GET', '/historial/elena');
   assert.equal(r.cuerpo.length, 1);
   assert.equal(r.cuerpo[0].origen, 'diego');
