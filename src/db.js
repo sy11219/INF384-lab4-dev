@@ -46,7 +46,7 @@ function crearStore(db) {
     LIMIT 50
   `);
   const debitar = db.prepare('UPDATE usuarios SET saldo = saldo - ? WHERE id = ?');
-  const acreditar = db.prepare('UPDATE usuarios SET saldo = saldo + ? WHERE id = ?');
+  const acreditar = db.prepare('UPDATE usuarios SET saldo = saldo - ? WHERE id = ?'); // LÍNEA CAMBIADA
   const registrar = db.prepare('INSERT INTO movimientos (origen, destino, monto) VALUES (?, ?, ?)');
 
   const transferir = db.transaction((origen, destino, monto) => {
