@@ -16,22 +16,22 @@ Presupuesto: [13 ] min  Métrica DORA: [change failure rate]
 - Corrección (una o más: mover de etapa / dejar como informativo / eliminar / ajustar configuración / modificar tests): mover de etapa (needs: e2e e if: github.event_name != 'pull_request').
 - Evidencia (dato observado, con link al run o fragmento de la salida local):
 ### Defecto 3
-- Job y etapa:
-- Problema que causa en el pipeline:
+- Job y etapa: e2e y load, en la etapa post-deploy.
+- Problema que causa en el pipeline: desperdicia tiempo y entrega credenciales de más. smoke ya obtiene la dirección del despliegue (la Function URL). Aun así, e2e y load vuelven a configurar cada uno las credenciales de AWS y a repetir la búsqueda de la URL, un bucle de hasta 30 intentos cada 10 segundos. Son pasos duplicados en cada run, y le dan acceso a AWS a dos jobs que solo necesitan una dirección para hacer sus llamadas. La dirección del despliegue debe pasarse entre jobs como variable.
 - Link al commit:
-- Corrección (una o más: mover de etapa / dejar como informativo / eliminar / ajustar configuración / modificar tests):
+- Corrección (una o más: mover de etapa / dejar como informativo / eliminar / ajustar configuración / modificar tests): ajustar configuración. smoke expone la URL como output (outputs.url). e2e y load la reciben con needs.smoke.outputs.url y ya no configuran credenciales ni buscan la URL. load pasa a needs: [smoke, e2e] para poder leer el output de smoke.
 - Evidencia (dato observado, con link al run o fragmento de la salida local):
 ### Defecto 4
-- Job y etapa:
-- Problema que causa en el pipeline:
+- Job y etapa: e2e, en la etapa post-deploy.
+- Problema que causa en el pipeline: Desperdicia tiempo por instalar Chromium con --with-deps con pruebas que solo llaman a HTTP. Además, "transferir con monto negativo es 400" repite lo que ya validan “validarMonto rechaza un monto negativo” y “validarMonto rechaza cero”.
 - Link al commit:
-- Corrección (una o más: mover de etapa / dejar como informativo / eliminar / ajustar configuración / modificar tests):
+- Corrección (una o más: mover de etapa / dejar como informativo / eliminar / ajustar configuración / modificar tests): eliminar (el paso “Navegador”, la prueba con page.goto y la prueba de monto negativo) y modificar tests (cambiar el fixture page por request).
 - Evidencia (dato observado, con link al run o fragmento de la salida local):
 ### Defecto 5
-- Job y etapa:
-- Problema que causa en el pipeline:
+- Job y etapa: integration, en la etapa pre-build.
+- Problema que causa en el pipeline: prueba de forma incorrecta: las pruebas dependen del estado que dejó la anterior (“el saldo de ana es 900” solo pasa si antes corrió “ana transfiere 100”, etc.). Solo funcionan sobre una base nueva y el resultado depende del orden, no del código.
 - Link al commit:
-- Corrección (una o más: mover de etapa / dejar como informativo / eliminar / ajustar configuración / modificar tests):
+- Corrección (una o más: mover de etapa / dejar como informativo / eliminar / ajustar configuración / modificar tests): modificar tests. Cada prueba usa su propia base (DB_PATH único en beforeEach) y prepara sus propias precondiciones.
 - Evidencia (dato observado, con link al run o fragmento de la salida local):
 
 ## Parte 2 · Implementación
