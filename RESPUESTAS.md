@@ -1,13 +1,13 @@
 # Respuestas · Laboratorio 4
-Alumno: [código]
-Presupuesto: [ ] min  Métrica DORA: [ ]
+Alumno: 20221377
+Presupuesto: [13 ] min  Métrica DORA: [change failure rate]
 
 ## Parte 1 · Diagnóstico
 ### Defecto 1
-- Job y etapa:
-- Problema que causa en el pipeline:
+- Job y etapa: smoke, en la etapa de pruebas contra el ambiente desplegado.
+- Problema que causa en el pipeline: Corre en paralelo con el despliegue (tiene needs:build-push en vez de needs:deploy), cuando debería correr después. Además, no recibe la versión esperada, por lo que no verifica qué versión corre.
 - Link al commit:
-- Corrección (una o más: mover de etapa / dejar como informativo / eliminar / ajustar configuración / modificar tests):
+- Corrección (una o más: mover de etapa / dejar como informativo / eliminar / ajustar configuración / modificar tests): Ajustar configuración y mover de etapa.
 - Evidencia (dato observado, con link al run o fragmento de la salida local):
 ### Defecto 2
 - Job y etapa:
