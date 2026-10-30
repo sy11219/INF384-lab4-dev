@@ -45,7 +45,19 @@ Presupuesto: [13 ] min  Métrica DORA: [change failure rate]
 - Problema que causa en el pipeline: prueba de forma incorrecta: las pruebas dependen del estado que dejó la anterior (“el saldo de ana es 900” solo pasa si antes corrió “ana transfiere 100”, etc.). Solo funcionan sobre una base nueva y el resultado depende del orden, no del código.
 - Link al commit: https://github.com/sy11219/INF384-lab4-dev/commit/e2db37fc09e77498f1b3862690da7a83345bd9e0
 - Corrección (una o más: mover de etapa / dejar como informativo / eliminar / ajustar configuración / modificar tests): modificar tests. Cada prueba usa su propia base (DB_PATH único en beforeEach) y prepara sus propias precondiciones.
-- Evidencia (dato observado, con link al run o fragmento de la salida local): 
+- Evidencia (dato observado, con link al run o fragmento de la salida local): Antes: correr el test dos veces seguidas causa error: ✖ diego transfiere todo su saldo a elena (0.367ms). Después: todas las pruebas pasan. ✔ ana transfiere 100 a beto (30.0221ms)
+✔ el saldo de ana refleja el debito (17.9697ms)
+✔ el saldo de beto refleja el credito (15.5728ms)
+✔ el historial de ana registra la transferencia (16.3616ms)
+✔ ana no puede transferir mas que su saldo (14.5527ms)
+✔ una transferencia rechazada no cambia saldos (13.824ms)
+✔ diego transfiere todo su saldo a elena (15.3189ms)
+✔ diego sin saldo no puede transferir (14.7782ms)
+✔ el historial de elena muestra solo la transferencia de diego (17.1169ms)
+✔ transferir al mismo usuario es 422 (14.2757ms)
+✔ transferir a un usuario inexistente es 400 (16.9099ms)
+✔ un cuerpo que no es JSON es 400 (0.3701ms) 
+(Se hizo node --test test/integration/transferir.test.js)
 
 ## Parte 2 · Implementación
 - Link al run en verde en main: https://github.com/sy11219/INF384-lab4-dev/actions/runs/40966463356
