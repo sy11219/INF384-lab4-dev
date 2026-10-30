@@ -87,14 +87,14 @@ SLA propuesto y diferencia con el SLO: SLA para clientes: el 95% de las operacio
 
 Cambios para cumplir el presupuesto:
 | Cambio | Job | Minutos recuperados |
-|---|---|---|
+|Perfil de carga 30s + 4m + 30s|load|7|
 
-Total resultante: [ ] min
-Link al run en main con los cambios:
+Total resultante: 07:09 min
+Link al run en main con los cambios: https://github.com/sy11219/INF384-lab4-dev/actions/runs/40976505209
 
-Riesgo aceptado (defecto de la aplicación concreto y efecto en la métrica DORA asignada):
+Riesgo aceptado (defecto de la aplicación concreto y efecto en la métrica DORA asignada): Con menor tiempo de carga, se acumulan menos transacciones, por lo que la latencia no crece tanto. Con datos reales, es posible que se acabe incumpliendo el SLO, por lo que se consideraría fallido el despliegue. Por ello, la métrica DORA aumentaría.
 
-Decisión sobre sast (se queda / se mueve a otra etapa o evento / informativo) y razón:
+Decisión sobre sast (se queda / se mueve a otra etapa o evento / informativo) y razón: sast se queda, ya que corre en paralelo con los primeros jobs y dura poco (23s), por lo que no afecta el tiempo total. Por otra parte, como sast evita que código inseguro se despliegue, quitarlo haría que el código llegue a producción, aumentando el CFR. Si se quitara, el ahorro en tiempo no justificaría empeorar la métrica.	
 
 ## Declaración de uso de IA
 Herramientas usadas y para qué:
